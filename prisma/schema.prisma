@@ -22,12 +22,12 @@ model User {
   role     userRole @default(USER_FIZ)
   regionId String
 
-  Region  Region    @relation(fields: [regionId], references: [id])
+  Region  Region       @relation(fields: [regionId], references: [id])
   sesion  Sesion[]
   company Company[]
   order   Order[]
   comment Comment[]
-  basket  Basket[]
+  basket  BasketItem[]
   star    Star[]
 }
 
@@ -121,7 +121,7 @@ model Tool {
   Capacity         Capacity           @relation(fields: [capacityId], references: [id])
   productTool      productTool[]
   orderProduct     orderProduct[]
-  basket           Basket[]
+  basket           BasketItem[]
   orderProductTool OrderProductTool[]
 }
 
@@ -148,7 +148,7 @@ model Product {
   productLevel  productLevel[]
   masterProduct MasterProduct[]
   orderProduct  orderProduct[]
-  basket        Basket[]
+  basket        BasketItem[]
 }
 
 model productTool {
@@ -193,7 +193,7 @@ model Level {
   productLevel  productLevel[]
   masterProduct MasterProduct[]
   orderProduct  orderProduct[]
-  basket        Basket[]
+  basket        BasketItem[]
 }
 
 model Master {
@@ -233,7 +233,7 @@ model Order {
 enum orderStatus {
   IN_PROGRESS
   COMPLETED
-  CANCELLED 
+  CANCELLED
   FAILED
 }
 
@@ -278,20 +278,25 @@ model OrderProductTool {
   count          Int
 }
 
-model Basket {
-  id          String   @id @default(uuid())
+model BasketItem {
+  id          String     @id @default(uuid())
   userId      String?
-  User        User?    @relation(fields: [userId], references: [id])
+  User        User?      @relation(fields: [userId], references: [id])
   productId   String?
-  product     Product? @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product     Product?   @relation(fields: [productId], references: [id], onDelete: Cascade)
   toolId      String?
-  tool        Tool?    @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  tool        Tool?      @relation(fields: [toolId], references: [id], onDelete: Cascade)
   levelId     String?
-  level       Level?   @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  level       Level?     @relation(fields: [levelId], references: [id], onDelete: Cascade)
   count       Int
   workingTime Int?
   totalPrice  Decimal
-  timeUnit    String
+  timeUnit    timeStatus
+}
+
+enum timeStatus {
+  HOUR
+  DAILY
 }
 
 model faq {
@@ -302,10 +307,10 @@ model faq {
 }
 
 model Partners {
-  id      String @id @default(uuid())
+  id      String  @id @default(uuid())
   name_uz String
-  name_ru String
-  name_en String
+  name_ru String?
+  name_en String?
   image   String
 }
 

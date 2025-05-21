@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreatePartnerDto {
   @ApiProperty({ description: "Partner's name in Uzbek" })
@@ -8,17 +8,20 @@ export class CreatePartnerDto {
   name_uz: string;
 
   @ApiProperty({ description: "Partner's name in Russian" })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  name_ru: string;
+  name_ru?: string;
 
   @ApiProperty({ description: "Partner's name in English" })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
-  name_en: string;
+  name_en?: string;
 
-  @ApiProperty({ description: "Partner's image URL" })
+  @ApiProperty({
+    description: "Partner's image URL",
+    example: '1744664398677.png',
+  })
+  @IsOptional()
   @IsString()
-  @IsNotEmpty()
   image: string;
 }

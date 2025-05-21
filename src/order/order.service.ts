@@ -9,6 +9,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { where } from 'sequelize';
 import { AssignMastersDto } from './dto/assig-masterdto';
 import { orderStatus } from '@prisma/client';
+import { contains } from 'class-validator';
 
 @Injectable()
 export class OrderService {
@@ -68,6 +69,18 @@ export class OrderService {
           });
         }
       }
+      await tx.basketItem.deleteMany({
+        where: {
+          userId,
+          OR: data.orderProducts.map((p) => ({
+            productId: p.productId,
+            levelId: p.levelId,
+            toolId: {
+              in: p.tools.map((t) => t.toolId),
+            },
+          })),
+        },
+      });
 
       return order;
     });
@@ -97,10 +110,84 @@ export class OrderService {
       });
     });
   }
+  async myOrder(userId: string) {
+    let data = await this.prisma.order.findMany({
+      where: { userId: userId },
+      select: {
+        id: true,
+        total: true,
+        date: true,
+        address: true,
 
-  async findAll() {
-    let data = await this.prisma.order.findMany();
+        user: {
+          select: {
+            id: true,
+            fullName: true,
+            phone: true,
+          },
+        },
+      },
+    });
+
     return data;
+  }
+  async findAll(query: {
+    page?: number;
+    limit?: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    status?: string;
+    userId?: string;
+    address?: string;
+  }) {
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'creadetAt',
+      sortOrder = 'desc',
+      status,
+      userId,
+      address,
+    } = query;
+
+    const skip = Number(page - 1) * limit;
+
+    const where: any = {};
+
+    if (status) {
+      where.status = status;
+    }
+    if (address) {
+      where.address = { contains: address, mode: 'insensitive' };
+    }
+
+    if (userId) {
+      where.userId = userId;
+    }
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.order.findMany({
+        where,
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+        skip,
+        take: Number(limit),
+        include: {
+          user: {
+            select: { fullName: true },
+          },
+        },
+      }),
+      this.prisma.order.count({ where }),
+    ]);
+
+    return {
+      total,
+      page: Number(page),
+      lastPage: Math.ceil(total / limit),
+      data,
+    };
   }
 
   async findOne(id: string) {

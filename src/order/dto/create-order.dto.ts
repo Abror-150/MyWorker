@@ -8,6 +8,7 @@ import {
   IsEnum,
   IsNumber,
   IsOptional,
+  IsPositive,
   IsString,
   IsUUID,
   ValidateNested,
@@ -35,6 +36,7 @@ export class OrderProductDto {
 
   @ApiProperty({ example: 3 })
   @IsNumber()
+  @IsPositive()
   count: number;
 
   @ApiProperty({ example: orderStatus.IN_PROGRESS })

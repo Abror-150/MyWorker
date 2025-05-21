@@ -8,12 +8,14 @@ import {
   Delete,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { Request } from 'express';
 import { AuthGuard } from 'src/guard/auth.guard';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('comment')
 export class CommentController {
@@ -26,9 +28,14 @@ export class CommentController {
     return this.commentService.create(createCommentDto, userId);
   }
 
+  @ApiQuery({ name: 'message', required: false })
+  @ApiQuery({ name: 'sortBy', required: false, enum: ['id', 'createdAt'] })
+  @ApiQuery({ name: 'sortOrder', required: false, enum: ['asc', 'desc'] })
+  @ApiQuery({ name: 'page', required: false, type: Number })
+  @ApiQuery({ name: 'limit', required: false, type: Number })
   @Get()
-  findAll() {
-    return this.commentService.findAll();
+  findAll(@Query() query: any) {
+    return this.commentService.findAll(query);
   }
 
   @Get(':id')

@@ -17,8 +17,58 @@ export class CommentService {
     });
   }
 
-  async findAll() {
-    return this.prisma.comment.findMany({});
+  async findAll(query: {
+    message?: string;
+    sortBy?: 'id' | 'createdAt';
+    sortOrder?: 'asc' | 'desc';
+    page?: number;
+    limit?: number;
+  }) {
+    const {
+      message,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      page = 1,
+      limit = 10,
+    } = query;
+
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.comment.findMany({
+        where: {
+          ...(message && {
+            message: {
+              contains: message,
+              mode: 'insensitive',
+            },
+          }),
+        },
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+        skip,
+        take: Number(limit),
+      }),
+
+      this.prisma.comment.count({
+        where: {
+          ...(message && {
+            message: {
+              contains: message,
+              mode: 'insensitive',
+            },
+          }),
+        },
+      }),
+    ]);
+
+    return {
+      data,
+      total,
+      page: Number(page),
+      lastPage: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: string) {

@@ -8,6 +8,7 @@ import {
   Delete,
   Req,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { CreateOrderDto } from './dto/create-order.dto';
@@ -19,6 +20,7 @@ import { Roles } from 'src/user/decorators/rbuc.decorator';
 import { userInfo } from 'os';
 import { userRole } from '@prisma/client';
 import { UpdateOrderDto } from './dto/update-order.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('order')
 export class OrderController {
@@ -30,16 +32,38 @@ export class OrderController {
     const userId = req['user-id'];
     return this.orderService.create(createOrderDto, userId);
   }
+  @Get('myOrder')
+  myOrder(@Req() req: Request) {
+    let userId = req['user-id'];
+    return this.orderService.myOrder(userId);
+  }
 
   @Get()
-  findAll() {
-    return this.orderService.findAll();
+  @ApiQuery({ name: 'address', required: false })
+  @ApiQuery({ name: 'page', required: false, example: 1 })
+  @ApiQuery({ name: 'limit', required: false, example: 10 })
+  @ApiQuery({ name: 'sortBy', required: false, enum: ['creadetAt'] })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    example: 'desc',
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    enum: ['IN_PROGRESS', 'COMPLETED', 'FAILED', 'CANCELLED'],
+  })
+  @ApiQuery({ name: 'userId', required: false })
+  findAll(@Query() query: any) {
+    return this.orderService.findAll(query);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.orderService.findOne(id);
   }
+
   @UseGuards(AuthGuard)
   @Patch(':id')
   update(
