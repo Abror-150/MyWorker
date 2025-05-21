@@ -17,19 +17,18 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { emailDto } from './dto/createEmaildto';
 import { otpDto } from './dto/create-user.dtootp copy';
 import { AuthGuard } from 'src/guard/auth.guard';
-import { Request } from 'express';
+import { request, Request } from 'express';
 import { createAdmin } from './dto/create-admindto';
 import { ApiOperation } from '@nestjs/swagger';
 import { RefreshTokendDto } from './dto/changed.user.dtoRefresh';
+import { RbucGuard } from 'src/guard/rbuc.guard';
+import { Roles } from './decorators/rbuc.decorator';
+import { userRole } from '@prisma/client';
+import { ChangePasswordDto } from './dto/reset-password.dto';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-
-  @Post('register')
-  register(@Body() createUserDto: CreateUserDto) {
-    return this.userService.register(createUserDto);
-  }
   @Post('sendEmail')
   create(@Body() data: emailDto) {
     return this.userService.sendEmail(data);
@@ -37,6 +36,10 @@ export class UserController {
   @Post('verifyEmail')
   verify(@Body() data: otpDto) {
     return this.userService.verifyEmail(data);
+  }
+  @Post('register')
+  register(@Body() createUserDto: CreateUserDto) {
+    return this.userService.register(createUserDto);
   }
 
   @Post('login')
@@ -57,26 +60,41 @@ export class UserController {
     const userId = req['user-id'];
     return this.userService.me(userId);
   }
+  @Roles(userRole.ADMIN)
+  @UseGuards(RbucGuard)
+  @UseGuards(AuthGuard)
   @Get()
   findAll() {
     return this.userService.findAll();
   }
-
+  @Roles(userRole.ADMIN)
+  @UseGuards(RbucGuard)
+  @UseGuards(AuthGuard)
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(id);
   }
-
+  @Roles(userRole.ADMIN, userRole.SUPER_ADMIN)
+  @UseGuards(RbucGuard)
+  @UseGuards(AuthGuard)
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     return this.userService.update(id, updateUserDto);
   }
-
+  @Roles(userRole.ADMIN)
+  @UseGuards(RbucGuard)
+  @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }
-
+  @UseGuards(AuthGuard)
+  @Post('resetPassword')
+  resetPassword(@Body() data: ChangePasswordDto, @Req() req: Request) {
+    const userId = req['user-id'];
+    return this.userService.ResetPassword(data, userId);
+  }
+  @UseGuards(AuthGuard)
   @Delete('/session/:id')
   @ApiOperation({ summary: "Foydalanuvchining sessiyasini o'chirish" })
   @UseGuards(AuthGuard)
@@ -88,7 +106,8 @@ export class UserController {
   async refreshToken(@Body() data: RefreshTokendDto) {
     return this.userService.refresh(data);
   }
-
+  @Roles(userRole.ADMIN, userRole.SUPER_ADMIN)
+  @UseGuards(RbucGuard)
   @UseGuards(AuthGuard)
   @Post('admin')
   addAdmin(@Body() data: createAdmin, @Req() req: Request) {
@@ -99,6 +118,8 @@ export class UserController {
     return this.userService.addAdmin(data, requesterRole);
   }
 
+  @Roles(userRole.ADMIN)
+  @UseGuards(RbucGuard)
   @UseGuards(AuthGuard)
   @Delete('admin/:id')
   deleteAdmin(@Param('id') id: string, @Req() req: Request) {

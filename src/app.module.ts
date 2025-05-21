@@ -14,9 +14,13 @@ import { ToolModule } from './tool/tool.module';
 import { LevelModule } from './level/level.module';
 import { MasterModule } from './master/master.module';
 import { FaqModule } from './faq/faq.module';
+import { OrderModule } from './order/order.module';
+import { CommentModule } from './comment/comment.module';
+import { GeneralInfoModule } from './general-info/general-info.module';
+import { PartnersModule } from './partners/partners.module';
 
 @Module({
-  imports: [PrismaModule, UserModule, MailModule, RegionModule, BrandModule, SizeModule, CapacityModule, ProductModule, ToolModule, LevelModule, MasterModule, FaqModule],
+  imports: [PrismaModule, UserModule, MailModule, RegionModule, BrandModule, SizeModule, CapacityModule, ProductModule, ToolModule, LevelModule, MasterModule, FaqModule, OrderModule, CommentModule, GeneralInfoModule, PartnersModule],
   controllers: [AppController],
   providers: [AppService],
 })

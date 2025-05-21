@@ -8,6 +8,9 @@ import { UpdateMasterDto } from './dto/update-master.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { CreateProductDto } from 'src/product/dto/create-product.dto';
 import { Master } from '@prisma/client';
+import { CreateStarDto } from './dto/create-Star.dto copy';
+import { connect } from 'http2';
+import { where } from 'sequelize';
 
 @Injectable()
 export class MasterService {
@@ -59,7 +62,7 @@ export class MasterService {
           minWorkingHours: item.minWorkingHours,
           priceHourly: item.priceHourly,
           priceDaily: item.priceDaily,
-          experince: item.experience,
+          experince: Number(item.experience),
         })),
       });
     }
@@ -72,21 +75,67 @@ export class MasterService {
     return { data: result };
   }
 
-  async findAll() {
+  async findAll(params: {
+    page?: number;
+    limit?: number;
+    fullName?: string;
+    year?: number;
+    isActive?: boolean;
+    sort?: 'asc' | 'desc';
+  }) {
+    const {
+      page = 1,
+      limit = 10,
+      fullName,
+      year,
+      isActive,
+      sort = 'asc',
+    } = params;
+
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    if (fullName) {
+      where.fullName = {
+        contains: fullName,
+        mode: 'insensitive',
+      };
+    }
+
+    if (typeof year === 'number') {
+      where.year = year;
+    }
+
+    if (typeof isActive === 'boolean') {
+      where.isActive = isActive;
+    }
+
     return this.prisma.master.findMany({
-      include: { masterProduct: true },
+      where,
+      orderBy: {
+        fullName: sort,
+      },
+      skip,
+      take: limit,
     });
   }
 
   async findOne(id: string) {
     const master = await this.prisma.master.findUnique({
       where: { id },
-      include: { masterProduct: true , },
+      include: { masterProduct: true },
     });
     if (!master) {
       throw new NotFoundException(`Master topilmadi: ${id}`);
     }
-    return master;
+    let avg = await this.prisma.star.aggregate({
+      where: { masterId: id },
+      _avg: { star: true },
+    });
+    let avgStarRaw = avg._avg.star ?? 0;
+    let avgStar = parseFloat(avgStarRaw.toFixed(2));
+    return { ...master, avgStar };
   }
 
   async update(id: string, dto: UpdateMasterDto): Promise<Master> {
@@ -180,5 +229,23 @@ export class MasterService {
     }
     await this.prisma.master.delete({ where: { id } });
     return { message: 'Master muvaffaqiyatli o‘chirildi' };
+  }
+
+  async createStar(data: CreateStarDto, userId: string) {
+    let existingStar = await this.prisma.star.findFirst({
+      where: { userId, id: data.masterId },
+    });
+    if (existingStar) {
+      throw new BadRequestException(
+        'Siz allaqachon ushbu masterga star qo‘ygansiz ',
+      );
+    }
+    return await this.prisma.star.create({
+      data: {
+        user: { connect: { id: userId } },
+        Master: { connect: { id: data.masterId } },
+        star: data.star,
+      },
+    });
   }
 }

@@ -7,6 +7,8 @@ import {
   IsString,
   ValidateNested,
   IsUUID,
+  isNotEmpty,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ProfessionLevelDto } from './create-productLevel.dto';
@@ -18,13 +20,13 @@ export class ConnectRelationDto {
 }
 
 export class CreateProductDto {
-  @ApiProperty({ example: 'Mahsulot nomi (uz)', description: 'Name in Uzbek' })
+  @ApiProperty({ example: 'Tozalov ishlari', description: 'Name in Uzbek' })
   @IsString()
   @IsNotEmpty()
   name_uz: string;
 
   @ApiProperty({
-    example: 'Название продукта',
+    example: 'Уборка',
     description: 'Name in Russian',
     required: false,
   })
@@ -33,7 +35,7 @@ export class CreateProductDto {
   name_ru?: string;
 
   @ApiProperty({
-    example: 'Product name',
+    example: 'cleaning work',
     description: 'Name in English',
     required: false,
   })
@@ -50,6 +52,15 @@ export class CreateProductDto {
   @IsOptional()
   @IsBoolean()
   isActive?: boolean;
+
+  @ApiProperty({
+    example: 1,
+    description: 'ishlash vaqti',
+    required: false,
+  })
+  @IsNotEmpty()
+  @IsNumber()
+  minWorkingHours?: number;
 
   @ApiProperty({
     example: 'https://example.com/image.jpg',

@@ -5,6 +5,14 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { resourceUsage } from 'process';
 import { resolveObjectURL } from 'buffer';
 
+export interface FindAllLevelParams {
+  page?: number;
+  limit?: number;
+  search?: string;
+  sortBy?: 'question' | 'answer' | 'createdAt';
+  sortOrder?: 'asc' | 'desc';
+}
+
 @Injectable()
 export class FaqService {
   constructor(private readonly prisma: PrismaService) {}
@@ -13,9 +21,44 @@ export class FaqService {
     return created;
   }
 
-  async findAll() {
-    let data = await this.prisma.faq.findMany();
-    return data;
+  async findAll(query: FindAllLevelParams = {}) {
+    const {
+      page = 1,
+      limit = 10,
+      sortBy = 'createdAt',
+      sortOrder = 'desc',
+      search = '',
+    } = query;
+
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { question: { contains: search, mode: 'insensitive' } },
+        { answer: { contains: search, mode: 'insensitive' } },
+      ];
+    }
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.faq.findMany({
+        where,
+        skip: Number(skip),
+        take: Number(limit),
+        orderBy: {
+          [sortBy]: sortOrder,
+        },
+      }),
+      this.prisma.faq.count({ where }),
+    ]);
+
+    return {
+      total,
+      page: Number(page),
+      limit: Number(limit),
+      data,
+    };
   }
 
   async update(id: string, data: UpdateFaqDto) {

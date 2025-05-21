@@ -7,6 +7,7 @@ export class CreateCompanyDto {
     description: 'Company Name',
     example: 'TechCorp LLC',
   })
+  @IsOptional()
   @IsString()
   name: string;
 
@@ -14,6 +15,7 @@ export class CreateCompanyDto {
     description: 'Company INN',
     example: '123456789',
   })
+  @IsOptional()
   @IsString()
   inn: string;
 
@@ -28,6 +30,7 @@ export class CreateCompanyDto {
     description: 'Company Address',
     example: '123 Tech Street, Tashkent, Uzbekistan',
   })
+  @IsOptional()
   @IsString()
   address: string;
 

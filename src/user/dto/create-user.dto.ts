@@ -11,6 +11,7 @@ import {
   ValidateNested,
   Matches,
   IsIn,
+  MinLength,
 } from 'class-validator';
 import { CreateCompanyDto } from './create-companyDto';
 
@@ -27,18 +28,15 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
-  @ApiProperty({ example: 'strongPassword123' })
+  @ApiProperty({ example: '123456' })
   @IsString()
-  @Matches(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{6,}$/, {
-    message:
-      'Password must be at least 6 characters, include letters and numbers.',
-  })
+  @MinLength(6)
   password: string;
 
   @ApiProperty({ example: '+998901234567' })
   @IsString()
   @Matches(/^\+998\d{9}$/, {
-    message: 'Phone number must be in format +998901234567',
+    message: "Telefon raqam togri formatda bo'lish kerak  +998901234567",
   })
   phone: string;
 

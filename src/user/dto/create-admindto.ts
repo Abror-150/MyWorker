@@ -30,7 +30,7 @@ export class createAdmin {
   @ApiProperty({ example: '+998901234567' })
   @IsString()
   @Matches(/^\+998\d{9}$/, {
-    message: 'Phone number must be in format +998901234567',
+    message: 'Telefon raqat togri formatda bolish kerak +998901234567',
   })
   phone: string;
 

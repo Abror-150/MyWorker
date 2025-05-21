@@ -32,46 +32,38 @@ export class UserService {
   ) {}
 
   async sendEmail(data: emailDto) {
+    totp.options = { step: 600, digits: 4 };
     let { email } = data;
-    totp.options = { step: 120, digits: 4 };
 
     let otp = totp.generate(email + 'email');
-    await this.mail.sendEmail(email, otp, 'otp yuborildi');
+    await this.mail.sendEmail(email, 'otp yuborildi', otp);
     return { message: 'emailga yuborildi' };
   }
 
   async verifyEmail(data: otpDto) {
     const { email, otp } = data;
-    console.log('Email to verify:', email);
 
-    if (!email) {
-      throw new NotFoundException('Email not found');
-    }
-
-    const user = await this.prisma.user.findFirst({
-      where: { email },
-    });
-
-    console.log('User from DB:', user);
-
-    if (!user) {
-      throw new NotFoundException('Bunday foydalanuvchi topilmadi');
-    }
+    if (!email) throw new NotFoundException('Email topilmadi');
 
     const match = totp.verify({ token: otp, secret: email + 'email' });
-    if (!match) {
-      throw new BadRequestException('OTP not valid');
-    }
+    if (!match) throw new BadRequestException('OTP noto‘g‘ri');
 
-    await this.prisma.user.update({
-      where: { id: user.id },
-      data: { status: 'ACTIVE' },
+    await this.prisma.verifiedEmail.upsert({
+      where: { email },
+      update: {},
+      create: { email },
     });
 
-    return match;
+    return { message: 'Email tasdiqlandi' };
   }
 
   async register(data: CreateUserDto) {
+    const verified = await this.prisma.verifiedEmail.findUnique({
+      where: { email: data.email },
+    });
+    if (!verified) {
+      throw new BadRequestException('Iltimos, avval emailni tasdiqlang');
+    }
     const allowedRoles = [userRole.USER_YUR, userRole.USER_FIZ] as const;
     type AllowedRole = (typeof allowedRoles)[number];
 
@@ -129,19 +121,7 @@ export class UserService {
     let user = await this.prisma.user.findUnique({
       where: { email: data.email },
     });
-    let existingUser = await this.prisma.user.findFirst({
-      where: {
-        email: data.email,
-      },
-    });
 
-    if (
-      (existingUser?.role === 'USER_FIZ' ||
-        existingUser?.role === 'USER_YUR') &&
-      existingUser?.status !== 'ACTIVE'
-    ) {
-      throw new BadRequestException('Foydalanuvchi verify qilinmagan');
-    }
     if (!user) {
       throw new BadRequestException('user topilmadi ');
     }
@@ -165,10 +145,8 @@ export class UserService {
       { expiresIn: '7d' },
     );
     let device = request.headers['user-agent'] as string;
-    console.log(device, 'sadg');
 
     let ip = request.ip as string;
-    console.log(ip, 'sadsdg');
 
     let userSession = await this.prisma.sesion.findFirst({
       where: { userId: user.id },

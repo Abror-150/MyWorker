@@ -29,6 +29,7 @@ export class ProductService {
           name_en: data.name_en,
           img: data.img,
           isActive: data.isActive ?? true,
+          minWorkingHours: data.minWorkingHours,
         },
       });
 
@@ -122,10 +123,7 @@ export class ProductService {
 
     const data = await this.prisma.product.findMany({
       where,
-      include: {
-        productTool: true,
-        productLevel: true,
-      },
+
       orderBy: { [validSortBy]: validSortOrder },
       skip: (page - 1) * limit,
       take: limit,

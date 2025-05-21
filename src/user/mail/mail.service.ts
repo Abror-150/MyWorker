@@ -9,19 +9,19 @@ export class MailService {
     this.transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
-        user: 'testotpn16@gmail.com',
-        pass: 'zyhe vmzp llzh tbhc',
+        user: 'odilbek3093@gmail.com',
+        pass: 'ouli ileb tlqw xvcw',
       },
     });
   }
 
-  async sendEmail(to: string, subject: string, text: string): Promise<void> {
+  async sendEmail(to: string, text: string, subject: string): Promise<void> {
     try {
       const info = await this.transporter.sendMail({
         from: 'urazalievv.abror@gmail.com',
         to,
-        subject,
         text,
+        subject,
       });
       console.log('Email yuborildi:', info.messageId);
     } catch (error) {
