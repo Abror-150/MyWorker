@@ -14,14 +14,20 @@ export class BasketItemService {
     const productLevel = await this.prisma.productLevel.findFirst({
       where: {
         productId: dto.productId,
-        levelId: dto.levelId,
       },
     });
 
     if (!productLevel) {
-      throw new NotFoundException(
-        'Bunday mahsulot yoki level kombinatsiyasi topilmadi',
-      );
+      throw new NotFoundException('Bunday mahsulot topilmadi');
+    }
+    const productLevel2 = await this.prisma.productLevel.findFirst({
+      where: {
+        levelId: dto.levelId,
+      },
+    });
+
+    if (!productLevel2) {
+      throw new NotFoundException('Bunday level topilmadi');
     }
     let tol = await this.prisma.tool.findFirst({ where: { id: dto.toolId } });
     if (!tol) {
@@ -51,7 +57,7 @@ export class BasketItemService {
   }
 
   async findOne(id: string) {
-    let data = await this.prisma.basketItem.findFirst({ where: { id }});
+    let data = await this.prisma.basketItem.findFirst({ where: { id } });
     if (!data) {
       throw new NotFoundException('backet topilmadi ');
     }

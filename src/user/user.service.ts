@@ -186,8 +186,40 @@ export class UserService {
       throw new Error(`Xatolik: ${error.message}`);
     }
   }
-  async findAll() {
-    const users = await this.prisma.user.findMany();
+
+  async findAll(params: {
+    skip?: number;
+    take?: number;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }) {
+    const {
+      skip = 0,
+      take = 10,
+      search,
+      sortBy = 'fullName',
+      sortOrder = 'asc',
+    } = params;
+
+    const where: any = search
+      ? {
+          OR: [
+            { fullName: { contains: search, mode: 'insensitive' } },
+            { email: { contains: search, mode: 'insensitive' } },
+            { phone: { contains: search, mode: 'insensitive' } },
+          ],
+        }
+      : {};
+
+    const users = await this.prisma.user.findMany({
+      where,
+      skip,
+      take,
+      orderBy: {
+        [sortBy]: sortOrder,
+      },
+    });
 
     if (!users || users.length === 0) {
       throw new NotFoundException('No users found');

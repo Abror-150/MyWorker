@@ -21,10 +21,33 @@ import { PartnersModule } from './partners/partners.module';
 import { BasketItemModule } from './basket-item/basket-item.module';
 import { ShowcaseModule } from './showcase/showcase.module';
 import { ContactModule } from './contact/contact.module';
+import { TgBotService } from './tg-bot/tg-bot.service';
+import { TgBotModule } from './tg-bot/tg-bot.module';
 
 @Module({
-  imports: [PrismaModule, UserModule, MailModule, RegionModule, BrandModule, SizeModule, CapacityModule, ProductModule, ToolModule, LevelModule, MasterModule, FaqModule, OrderModule, CommentModule, GeneralInfoModule, PartnersModule, BasketItemModule, ShowcaseModule, ContactModule],
+  imports: [
+    PrismaModule,
+    UserModule,
+    MailModule,
+    RegionModule,
+    BrandModule,
+    SizeModule,
+    CapacityModule,
+    ProductModule,
+    ToolModule,
+    LevelModule,
+    MasterModule,
+    FaqModule,
+    OrderModule,
+    CommentModule,
+    GeneralInfoModule,
+    PartnersModule,
+    BasketItemModule,
+    ShowcaseModule,
+    ContactModule,
+    TgBotModule,
+  ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, TgBotService],
 })
 export class AppModule {}

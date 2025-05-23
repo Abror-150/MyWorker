@@ -7,17 +7,24 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ShowcaseService } from './showcase.service';
 import { CreateShowcaseDto } from './dto/create-showcase.dto';
 import { UpdateShowcaseDto } from './dto/update-showcase.dto';
 import { ApiQuery } from '@nestjs/swagger';
 import { FindAllShowcaseDto, SortOrder } from './dto/filter-showcase.dto copy';
+import { Roles } from 'src/user/decorators/rbuc.decorator';
+import { AuthGuard } from 'src/guard/auth.guard';
+import { RbucGuard } from 'src/guard/rbuc.guard';
+import { userRole } from '@prisma/client';
 
 @Controller('showcase')
 export class ShowcaseController {
   constructor(private readonly showcaseService: ShowcaseService) {}
-
+  @Roles(userRole.ADMIN)
+  @UseGuards(RbucGuard)
+  @UseGuards(AuthGuard)
   @Post()
   create(@Body() createShowcaseDto: CreateShowcaseDto) {
     return this.showcaseService.create(createShowcaseDto);
@@ -59,7 +66,9 @@ export class ShowcaseController {
   findOne(@Param('id') id: string) {
     return this.showcaseService.findOne(id);
   }
-
+  @Roles(userRole.ADMIN, userRole.SUPER_ADMIN)
+  @UseGuards(RbucGuard)
+  @UseGuards(AuthGuard)
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -67,7 +76,9 @@ export class ShowcaseController {
   ) {
     return this.showcaseService.update(id, updateShowcaseDto);
   }
-
+  @Roles(userRole.ADMIN)
+  @UseGuards(RbucGuard)
+  @UseGuards(AuthGuard)
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.showcaseService.remove(id);

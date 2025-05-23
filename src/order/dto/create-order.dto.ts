@@ -6,6 +6,7 @@ import {
   IsBoolean,
   IsDate,
   IsEnum,
+  IsNotEmpty,
   IsNumber,
   IsOptional,
   IsPositive,
@@ -16,66 +17,48 @@ import {
 
 export class ToolDto {
   @ApiProperty({ example: 'tool-uuid-123' })
+  @IsOptional()
   @IsUUID()
   toolId: string;
 
   @ApiProperty({ example: 5 })
+  @IsOptional()
   @IsNumber()
   count: number;
 }
 
 export class OrderProductDto {
   @ApiProperty({ example: 'product-uuid-123' })
+  @IsOptional()
   @IsUUID()
   productId: string;
 
   @ApiProperty({ example: 'uuid' })
+  @IsOptional()
   @IsString()
   @IsUUID()
   levelId: string;
 
   @ApiProperty({ example: 3 })
+  @IsNotEmpty()
   @IsNumber()
-  @IsPositive()
   count: number;
 
-  @ApiProperty({ example: orderStatus.IN_PROGRESS })
-  @IsEnum(orderStatus)
-  status: orderStatus;
-
   @ApiProperty({ example: 30 })
+  @IsNotEmpty()
   @IsNumber()
   price: number;
 
   @ApiProperty({ example: orderTime.HOUR })
+  @IsNotEmpty()
   @IsEnum(orderTime)
   workingTime: orderTime;
 
   @ApiProperty({ type: [ToolDto] })
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => ToolDto)
   tools: ToolDto[];
-}
-
-export class MasterRatingDto {
-  @ApiProperty({ example: 'master-uuid-3' })
-  @IsUUID()
-  id: string;
-
-  @ApiProperty({ example: 4.5 })
-  @IsNumber()
-  star: number;
-}
-
-class CommentDto {
-  @ApiProperty({ example: 'good' })
-  @IsString()
-  message: string;
-
-  @ApiProperty({ type: [MasterRatingDto] })
-  @ValidateNested({ each: true })
-  @Type(() => MasterRatingDto)
-  masters: MasterRatingDto[];
 }
 
 export class CreateOrderDto {
