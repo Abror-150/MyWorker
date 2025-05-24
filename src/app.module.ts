@@ -26,10 +26,14 @@ import { TgBotModule } from './tg-bot/tg-bot.module';
 import { UploadController } from './upload/upload.controller';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     PrismaModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     UserModule,
     MailModule,
     RegionModule,
