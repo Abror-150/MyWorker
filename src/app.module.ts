@@ -53,10 +53,6 @@ import { ConfigModule } from '@nestjs/config';
     ShowcaseModule,
     ContactModule,
     TgBotModule,
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'images'),
-      serveRoot: '/images',
-    }),
   ],
   controllers: [AppController, UploadController],
   providers: [AppService, TgBotService],
