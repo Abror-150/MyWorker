@@ -16,7 +16,7 @@ import {
 } from 'class-validator';
 
 export class ToolDto {
-  @ApiProperty({ example: 'tool-uuid-123' })
+  @ApiProperty({ example: 'b0421bc0-33f7-4992-b17c-d831161160bd' })
   @IsOptional()
   @IsUUID()
   toolId: string;
@@ -28,12 +28,12 @@ export class ToolDto {
 }
 
 export class OrderProductDto {
-  @ApiProperty({ example: 'product-uuid-123' })
+  @ApiProperty({ example: 'ef779445-f0df-448f-9538-b90b192909d1' })
   @IsOptional()
   @IsUUID()
   productId: string;
 
-  @ApiProperty({ example: 'uuid' })
+  @ApiProperty({ example: '5551e759-0cc2-4b9d-9716-fbe447ce979f' })
   @IsOptional()
   @IsString()
   @IsUUID()

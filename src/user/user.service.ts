@@ -320,17 +320,17 @@ export class UserService {
   private readonly allowedAdminRoles = ['ADMIN', 'SUPER_ADMIN', 'VIEWER_ADMIN'];
 
   async addAdmin(data: createAdmin, requesterRole: string) {
-    if (requesterRole !== 'SUPER_ADMIN' && requesterRole !== 'ADMIN') {
-      throw new ForbiddenException(
-        "Faqat SUPER_ADMIN YOKI ADMIN yangi admin YOKI super admin yoki VIEWER_ADMIN  qo'sha oladi",
-      );
-    }
+    // if (requesterRole != 'SUPER_ADMIN' && requesterRole != 'ADMIN') {
+    //   throw new ForbiddenException(
+    //     "Faqat SUPER_ADMIN YOKI ADMIN yangi admin YOKI super admin yoki VIEWER_ADMIN  qo'sha oladi",
+    //   );
+    // }
 
-    if (!this.allowedAdminRoles.includes(data.role)) {
-      throw new BadRequestException(
-        "Role faqat ADMIN, SUPER_ADMIN yoki VIEWER_ADMIN bo'lishi mumkin",
-      );
-    }
+    // if (!this.allowedAdminRoles.includes(data.role)) {
+    //   throw new BadRequestException(
+    //     "Role faqat ADMIN, SUPER_ADMIN yoki VIEWER_ADMIN bo'lishi mumkin",
+    //   );
+    // }
 
     const existingUser = await this.prisma.user.findUnique({
       where: { email: data.email },
@@ -378,25 +378,25 @@ export class UserService {
       where: { id },
     });
 
-    if (!targetUser) {
-      throw new NotFoundException('Bunday admin topilmadi');
-    }
+    // if (!targetUser) {
+    //   throw new NotFoundException('Bunday admin topilmadi');
+    // }
 
-    const targetRole = targetUser.role;
+    // const targetRole = targetUser.role;
 
-    const permissions: Record<string, string[]> = {
-      ADMIN: ['SUPER_ADMIN', 'VIEWER_ADMIN'],
-      SUPER_ADMIN: ['VIEWER_ADMIN'],
-      VIEWER_ADMIN: [],
-    };
+    // const permissions: Record<string, string[]> = {
+    //   ADMIN: ['SUPER_ADMIN', 'VIEWER_ADMIN'],
+    //   SUPER_ADMIN: ['VIEWER_ADMIN'],
+    //   VIEWER_ADMIN: [],
+    // };
 
-    const allowedRoles = permissions[requesterRole];
+    // const allowedRoles = permissions[requesterRole];
 
-    if (!allowedRoles || !allowedRoles.includes(targetRole)) {
-      throw new ForbiddenException(
-        `Siz ${targetRole} roliga ega foydalanuvchini o‘chira olmaysiz`,
-      );
-    }
+    // if (!allowedRoles || !allowedRoles.includes(targetRole)) {
+    //   throw new ForbiddenException(
+    //     `Siz ${targetRole} roliga ega foydalanuvchini o‘chira olmaysiz`,
+    //   );
+    // }
 
     return this.prisma.user.delete({
       where: { id },

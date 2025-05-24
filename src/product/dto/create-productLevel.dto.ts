@@ -5,7 +5,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class ProfessionLevelDto {
   @ApiProperty({
     description: 'Daraja ID (level jadvalidagi ID)',
-    example: 'c89d1234-e89b-12d3-a456-426614174222',
+    example: '5551e759-0cc2-4b9d-9716-fbe447ce979f',
   })
   @IsUUID()
   levelId: string;

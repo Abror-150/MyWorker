@@ -75,7 +75,7 @@ export class CreateProductDto {
     type: [String],
     required: false,
     description: 'List of tool IDs to connect',
-    example: ['toolId1', 'toolId2'],
+    example: ["b0421bc0-33f7-4992-b17c-d831161160bd"],
   })
   @IsOptional()
   @IsArray()

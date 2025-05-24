@@ -23,10 +23,35 @@ export class OrderService {
       throw new BadRequestException('orderProducts massiv bo‘lishi kerak');
     }
 
-    const total = data.orderProducts.reduce(
-      (sum, p) => sum + p.count * p.price,
-      0,
-    );
+    const total = data.orderProducts.reduce((sum, p) => {
+      if (Array.isArray(p.tools) && p.tools.length > 0) {
+        const toolsCountSum = p.tools.reduce((acc, t) => acc + t.count, 0);
+        return sum + p.count * p.price * toolsCountSum;
+      } else {
+        return sum + p.count * p.price;
+      }
+    }, 0);
+
+    const toolIds = data.orderProducts
+      .filter((item) => Array.isArray(item.tools))
+      .flatMap((item) => item.tools.map((tool) => tool.toolId));
+
+    const toolsData = toolIds.length
+      ? await this.prisma.tool.findMany({ where: { id: { in: toolIds } } })
+      : [];
+
+    for (const item of data.orderProducts) {
+      if (Array.isArray(item.tools)) {
+        for (const tool of item.tools) {
+          const toolData = toolsData.find((t) => t.id === tool.toolId);
+          if (!toolData || toolData.quantity < tool.count) {
+            throw new BadRequestException(
+              `Tool ${tool.toolId} ning ombordagi miqdori yetarli emas`,
+            );
+          }
+        }
+      }
+    }
 
     const order = await this.prisma.$transaction(async (tx) => {
       const order = await tx.order.create({
@@ -51,7 +76,6 @@ export class OrderService {
               price: item.price,
               workingTime: item.workingTime,
               timeUnit: item.timeUnit,
-
               orderProductTool: {
                 create: Array.isArray(item.tools)
                   ? item.tools.map((tool) => ({
@@ -65,42 +89,6 @@ export class OrderService {
         },
       });
 
-      const toolIds = data.orderProducts
-        .filter((item) => Array.isArray(item.tools))
-        .flatMap((item) => item.tools.map((tool) => tool.toolId));
-
-      if (toolIds.length > 0) {
-        const toolsData = await tx.tool.findMany({
-          where: { id: { in: toolIds } },
-        });
-
-        for (const item of data.orderProducts) {
-          if (Array.isArray(item.tools)) {
-            for (const tool of item.tools) {
-              const toolData = toolsData.find((t) => t.id === tool.toolId);
-              if (!toolData || toolData.quantity < tool.count) {
-                throw new BadRequestException(
-                  `Tool ${tool.toolId} ning ombordagi miqdori yetarli emas`,
-                );
-              }
-            }
-          }
-        }
-
-        await Promise.all(
-          data.orderProducts
-            .filter((item) => Array.isArray(item.tools))
-            .flatMap((item) =>
-              item.tools.map((tool) =>
-                tx.tool.update({
-                  where: { id: tool.toolId },
-                  data: { quantity: { decrement: tool.count } },
-                }),
-              ),
-            ),
-        );
-      }
-
       const basketConditions = data.orderProducts.map((p) => ({
         productId: p.productId,
         levelId: p.levelId ?? null,
@@ -109,7 +97,7 @@ export class OrderService {
         },
       }));
 
-      const deleteResult = await tx.basketItem.deleteMany({
+      await tx.basketItem.deleteMany({
         where: {
           userId,
           OR: basketConditions,
@@ -118,6 +106,17 @@ export class OrderService {
 
       return order;
     });
+
+    for (const item of data.orderProducts) {
+      if (Array.isArray(item.tools)) {
+        for (const tool of item.tools) {
+          await this.prisma.tool.update({
+            where: { id: tool.toolId },
+            data: { quantity: { decrement: tool.count } },
+          });
+        }
+      }
+    }
 
     const data1 = await this.prisma.order.findUnique({
       where: { id: order.id },
@@ -136,6 +135,7 @@ export class OrderService {
 
     return order;
   }
+
   async assignMastersToOrder(orderId: string, data: AssignMastersDto) {
     return this.prisma.$transaction(async (tx) => {
       await tx.orderMaster.deleteMany({ where: { orderId } });
@@ -404,11 +404,32 @@ export class OrderService {
   }
 
   async remove(id: string) {
-    let one = await this.prisma.order.findFirst({ where: { id } });
+    const one = await this.prisma.order.findFirst({ where: { id } });
     if (!one) {
-      throw new NotFoundException('order topilmadi');
+      throw new NotFoundException('Order topilmadi');
     }
-    let deleted = await this.prisma.order.delete({ where: { id } });
+
+    const orderProducts = await this.prisma.orderProduct.findMany({
+      where: { orderId: id },
+      select: { id: true },
+    });
+
+    const orderProductIds = orderProducts.map((op) => op.id);
+
+    await this.prisma.orderProductTool.deleteMany({
+      where: {
+        orderProductId: { in: orderProductIds },
+      },
+    });
+
+    await this.prisma.orderProduct.deleteMany({ where: { orderId: id } });
+
+    await this.prisma.orderMaster.deleteMany({ where: { orderId: id } });
+
+    await this.prisma.comment.deleteMany({ where: { orderId: id } });
+
+    const deleted = await this.prisma.order.delete({ where: { id } });
+
     return deleted;
   }
 }

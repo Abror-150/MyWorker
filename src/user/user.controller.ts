@@ -156,21 +156,21 @@ export class UserController {
   @Post('admin')
   addAdmin(@Body() data: createAdmin, @Req() req: Request) {
     const requesterRole = req['user-id'];
-    if (requesterRole !== 'ADMIN') {
-      throw new ForbiddenException("Faqat ADMIN yangi admin qo'sha oladi");
-    }
+    // if (requesterRole !== 'ADMIN') {
+    //   throw new ForbiddenException("Faqat ADMIN yangi admin qo'sha oladi");
+    // }
     return this.userService.addAdmin(data, requesterRole);
   }
 
-  @Roles(userRole.ADMIN)
+  @Roles(userRole.ADMIN, userRole.SUPER_ADMIN)
   @UseGuards(RbucGuard)
   @UseGuards(AuthGuard)
   @Delete('admin/:id')
   deleteAdmin(@Param('id') id: string, @Req() req: Request) {
-    const requesterRole = req['user-role'];
-    if (requesterRole !== 'ADMIN') {
-      throw new ForbiddenException("Faqat ADMIN adminni o'chira oladi");
-    }
+    const requesterRole = req['user-id'];
+    // if (requesterRole !== 'ADMIN') {
+    //   throw new ForbiddenException("Faqat ADMIN adminni o'chira oladi");
+    // }
     return this.userService.deleteAdmin(id, requesterRole);
   }
 }

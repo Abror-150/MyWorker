@@ -16,7 +16,6 @@ export class BasketItemService {
         productId: dto.productId,
       },
     });
-    console.log(dto.productId, 'asd');
 
     if (!productLevell) {
       console.log(productLevell, 'sasg');
@@ -48,16 +47,55 @@ export class BasketItemService {
         timeUnit: dto.timeUnit,
         totalPrice: Number(total),
       },
-      include: {
-        product: true,
-        level: true,
-      },
     });
   }
 
-  async findAll() {
-    let data = await this.prisma.basketItem.findMany();
-    return data;
+  async findAll(query: any) {
+    const {
+      productId,
+      levelId,
+      toolId,
+      userId,
+      sortBy = 'id',
+      order = 'desc',
+      page = 1,
+      limit = 10,
+    } = query;
+
+    const filterConditions: any = {};
+
+    if (productId) filterConditions.productId = productId;
+    if (levelId) filterConditions.levelId = levelId;
+    if (toolId) filterConditions.toolId = toolId;
+    if (userId) filterConditions.userId = userId;
+
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await this.prisma.$transaction([
+      this.prisma.basketItem.findMany({
+        where: filterConditions,
+        orderBy: {
+          [sortBy]: order,
+        },
+        skip: +skip,
+        take: +limit,
+        include: {
+          product: { select: { name_uz: true } },
+          tool: { select: { name_uz: true } },
+        },
+      }),
+      this.prisma.basketItem.count({
+        where: filterConditions,
+      }),
+    ]);
+
+    return {
+      data,
+      total,
+      page: +page,
+      limit: +limit,
+      totalPages: Math.ceil(total / limit),
+    };
   }
 
   async findOne(id: string) {
