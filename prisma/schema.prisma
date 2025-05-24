@@ -118,7 +118,7 @@ model Tool {
   creadetAt        DateTime?          @default(now())
   brand            Brand?             @relation(fields: [brandId], references: [id])
   size             Size?              @relation(fields: [sizeId], references: [id])
-  Capacity         Capacity?           @relation(fields: [capacityId], references: [id])
+  Capacity         Capacity?          @relation(fields: [capacityId], references: [id])
   productTool      productTool[]
   orderProduct     orderProduct[]
   basket           BasketItem[]
@@ -211,24 +211,24 @@ model Master {
   star          Star[]
 }
 
-  model Order {
-    id              String         @id @default(uuid())
-    userId          String
-    user            User           @relation(fields: [userId], references: [id])
-    total           Int
-    lattitude       String
-    longitude       String
-    date            DateTime       @default(now())
-    status          orderStatus    @default(IN_PROGRESS)
-    address         String
-    paymentType     String
-    withDelivery    Boolean
-    creadetAt       DateTime       @default(now())
-    deliveryComment String?
-    orderMaster     OrderMaster[]
-    orderProduct    orderProduct[]
-    comment         Comment[]
-  }
+model Order {
+  id              String         @id @default(uuid())
+  userId          String
+  user            User           @relation(fields: [userId], references: [id])
+  total           Int
+  lattitude       String
+  longitude       String
+  date            DateTime       @default(now())
+  status          orderStatus    @default(IN_PROGRESS)
+  address         String
+  paymentType     String
+  withDelivery    Boolean
+  creadetAt       DateTime       @default(now())
+  deliveryComment String?
+  orderMaster     OrderMaster[]
+  orderProduct    orderProduct[]
+  comment         Comment[]
+}
 
 enum orderStatus {
   IN_PROGRESS
