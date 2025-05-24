@@ -3,9 +3,6 @@ import { IsUUID, IsInt, Min, IsNumber, IsOptional } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class ProfessionLevelDto {
-  @IsOptional()
-  professionId: string;
-
   @ApiProperty({
     description: 'Daraja ID (level jadvalidagi ID)',
     example: 'c89d1234-e89b-12d3-a456-426614174222',

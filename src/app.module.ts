@@ -23,6 +23,9 @@ import { ShowcaseModule } from './showcase/showcase.module';
 import { ContactModule } from './contact/contact.module';
 import { TgBotService } from './tg-bot/tg-bot.service';
 import { TgBotModule } from './tg-bot/tg-bot.module';
+import { UploadController } from './upload/upload.controller';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
@@ -46,8 +49,12 @@ import { TgBotModule } from './tg-bot/tg-bot.module';
     ShowcaseModule,
     ContactModule,
     TgBotModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'images'),
+      serveRoot: '/images',
+    }),
   ],
-  controllers: [AppController],
+  controllers: [AppController, UploadController],
   providers: [AppService, TgBotService],
 })
 export class AppModule {}

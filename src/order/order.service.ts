@@ -50,6 +50,8 @@ export class OrderService {
               count: item.count,
               price: item.price,
               workingTime: item.workingTime,
+              timeUnit: item.timeUnit,
+
               orderProductTool: {
                 create: Array.isArray(item.tools)
                   ? item.tools.map((tool) => ({
@@ -114,8 +116,6 @@ export class OrderService {
         },
       });
 
-      console.log('Deleted basket items:', deleteResult.count);
-
       return order;
     });
 
@@ -124,6 +124,7 @@ export class OrderService {
       include: {
         user: { select: { fullName: true } },
         orderProduct: { include: { product: { select: { name_uz: true } } } },
+        orderMaster: { include: { Master: true } },
       },
     });
 
@@ -345,6 +346,7 @@ export class OrderService {
                 count: item.count,
                 price: item.price,
                 workingTime: item.workingTime,
+                timeUnit: item.timeUnit,
                 orderProductTool: {
                   create: item.tools.map((tool) => ({
                     tool: { connect: { id: tool.toolId } },

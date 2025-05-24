@@ -6,10 +6,12 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ContactService } from './contact.service';
 import { CreateContactDto } from './dto/create-contact.dto';
 import { UpdateContactDto } from './dto/update-contact.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('contact')
 export class ContactController {
@@ -21,8 +23,48 @@ export class ContactController {
   }
 
   @Get()
-  findAll() {
-    return this.contactService.findAll();
+  @ApiQuery({
+    name: 'skip',
+    required: false,
+    description: 'Nechta yozuvni otkazib yuborish (pagination offset)',
+  })
+  @ApiQuery({
+    name: 'take',
+    required: false,
+    description: 'Nechta yozuv olish (pagination limit)',
+  })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: "Qidiruv kalit so'zlari (name, surName)",
+  })
+  @ApiQuery({
+    name: 'sortBy',
+    required: false,
+    type: String,
+    description: "Qaysi ustun bo'yicha tartiblash (default: name)",
+  })
+  @ApiQuery({
+    name: 'sortOrder',
+    required: false,
+    enum: ['asc', 'desc'],
+    description: "Tartib yo'nalishi (asc yoki desc, default: asc)",
+  })
+  async findAll(
+    @Query('skip') skip?: string,
+    @Query('take') take?: string,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: 'asc' | 'desc',
+  ) {
+    return this.contactService.findAll({
+      skip: skip ? parseInt(skip) : undefined,
+      take: take ? parseInt(take) : undefined,
+      search,
+      sortBy,
+      sortOrder,
+    });
   }
 
   @Get(':id')

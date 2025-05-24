@@ -11,13 +11,16 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class BasketItemService {
   constructor(private readonly prisma: PrismaService) {}
   async create(userId: string, dto: CreateBasketItemDto) {
-    const productLevel = await this.prisma.productLevel.findFirst({
+    const productLevell = await this.prisma.productLevel.findFirst({
       where: {
         productId: dto.productId,
       },
     });
+    console.log(dto.productId, 'asd');
 
-    if (!productLevel) {
+    if (!productLevell) {
+      console.log(productLevell, 'sasg');
+
       throw new NotFoundException('Bunday mahsulot topilmadi');
     }
     const productLevel2 = await this.prisma.productLevel.findFirst({
@@ -33,7 +36,7 @@ export class BasketItemService {
     if (!tol) {
       throw new BadRequestException('tool topilmadi');
     }
-    const total = dto.count * productLevel.minWorkingHours;
+    const total = dto.count * productLevell.minWorkingHours;
     return this.prisma.basketItem.create({
       data: {
         userId: userId,
@@ -42,6 +45,7 @@ export class BasketItemService {
         workingTime: dto.workingTime,
         count: dto.count,
         toolId: dto.toolId,
+        timeUnit: dto.timeUnit,
         totalPrice: Number(total),
       },
       include: {
@@ -59,7 +63,7 @@ export class BasketItemService {
   async findOne(id: string) {
     let data = await this.prisma.basketItem.findFirst({ where: { id } });
     if (!data) {
-      throw new NotFoundException('backet topilmadi ');
+      throw new NotFoundException('basket topilmadi ');
     }
     return data;
   }
@@ -67,7 +71,7 @@ export class BasketItemService {
   async update(id: string, data: UpdateBasketItemDto) {
     let one = await this.prisma.basketItem.findFirst({ where: { id } });
     if (!one) {
-      throw new NotFoundException('backet topilmadi ');
+      throw new NotFoundException('basket topilmadi ');
     }
     let updated = await this.prisma.basketItem.update({ where: { id }, data });
     return updated;
@@ -76,7 +80,7 @@ export class BasketItemService {
   async remove(id: string) {
     let one = await this.prisma.basketItem.findFirst({ where: { id } });
     if (!one) {
-      throw new NotFoundException('backet topilmadi ');
+      throw new NotFoundException('basket topilmadi ');
     }
     let deleted = await this.prisma.basketItem.delete({ where: { id } });
     return deleted;

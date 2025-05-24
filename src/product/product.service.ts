@@ -49,6 +49,7 @@ export class ProductService {
             levelId: item.levelId,
             minWorkingHours: item.minWorkingHours,
             priceHourly: item.priceHourly,
+
             priceDaily: item.priceDaily,
           })),
         });

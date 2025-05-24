@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsOptional, IsUUID } from 'class-validator';
+import { orderTime } from '@prisma/client';
+import { IsEnum, IsInt, IsNotEmpty, IsOptional, IsUUID } from 'class-validator';
 
 export class CreateBasketItemDto {
   @ApiProperty({
     description: 'Mahsulot IDsi',
     example: 'd290f1ee-6c54-4b01-90e6-d701748f0851',
   })
-  @IsUUID()
-
+  @IsOptional()
   @IsUUID()
   productId: string;
 
@@ -32,6 +32,10 @@ export class CreateBasketItemDto {
   })
   @IsInt()
   workingTime: number;
+  @ApiProperty({ example: orderTime.HOUR })
+  @IsNotEmpty()
+  @IsEnum(orderTime)
+  timeUnit: orderTime;
 
   @ApiProperty({
     description: 'Asbob (tool) IDsi',

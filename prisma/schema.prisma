@@ -112,13 +112,13 @@ model Tool {
   code             Int
   brandId          String?
   sizeId           String?
-  capacityId       String
+  capacityId       String?
   isActive         Boolean?           @default(true)
   img              String?
   creadetAt        DateTime?          @default(now())
   brand            Brand?             @relation(fields: [brandId], references: [id])
   size             Size?              @relation(fields: [sizeId], references: [id])
-  Capacity         Capacity           @relation(fields: [capacityId], references: [id])
+  Capacity         Capacity?           @relation(fields: [capacityId], references: [id])
   productTool      productTool[]
   orderProduct     orderProduct[]
   basket           BasketItem[]
@@ -258,9 +258,10 @@ model orderProduct {
 
   levelId          String?
   level            Level?             @relation(fields: [levelId], references: [id])
-  workingTime      orderTime
+  workingTime      Int
   price            Decimal
   count            Int
+  timeUnit         orderTime
   orderProductTool OrderProductTool[]
 }
 
@@ -279,24 +280,19 @@ model OrderProductTool {
 }
 
 model BasketItem {
-  id          String     @id @default(uuid())
+  id          String    @id @default(uuid())
   userId      String?
-  User        User?      @relation(fields: [userId], references: [id])
+  User        User?     @relation(fields: [userId], references: [id])
   productId   String?
-  product     Product?   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  product     Product?  @relation(fields: [productId], references: [id], onDelete: Cascade)
   toolId      String?
-  tool        Tool?      @relation(fields: [toolId], references: [id], onDelete: Cascade)
+  tool        Tool?     @relation(fields: [toolId], references: [id], onDelete: Cascade)
   levelId     String?
-  level       Level?     @relation(fields: [levelId], references: [id], onDelete: Cascade)
+  level       Level?    @relation(fields: [levelId], references: [id], onDelete: Cascade)
   count       Int
   workingTime Int?
   totalPrice  Decimal
-  timeUnit    timeStatus
-}
-
-enum timeStatus {
-  HOUR
-  DAILY
+  timeUnit    orderTime
 }
 
 model faq {

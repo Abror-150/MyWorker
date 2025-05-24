@@ -24,7 +24,7 @@ export class CreateUserDto {
   @IsNotEmpty()
   fullName: string;
 
-  @ApiProperty({ example: 'john@example.com' })
+  @ApiProperty({ example: 'john@gmail.com' })
   @IsEmail()
   email: string;
 
@@ -33,7 +33,7 @@ export class CreateUserDto {
   @MinLength(6)
   password: string;
 
-  @ApiProperty({ example: '+998901234567' })
+  @ApiProperty({ example: '+998901232000' })
   @IsString()
   @Matches(/^\+998\d{9}$/, {
     message: "Telefon raqam togri formatda bo'lish kerak  +998901234567",
@@ -47,7 +47,7 @@ export class CreateUserDto {
   @IsIn([userRole.USER_FIZ, userRole.USER_YUR])
   role: userRole;
 
-  @ApiProperty({ example: 'd1e2f3g4-h5i6-j7k8-l9m0-n1o2p3q4r5s6' })
+  @ApiProperty({ example: '5c03e643-9419-4aee-a87f-62c136dd63dd' })
   @IsString()
   @IsNotEmpty()
   regionId: string;

@@ -8,13 +8,40 @@ export class ContactService {
   constructor(private readonly prisma: PrismaService) {}
 
   create(createContactDto: CreateContactDto) {
+
     return this.prisma.contact.create({
       data: createContactDto,
     });
   }
 
-  findAll() {
-    return this.prisma.contact.findMany();
+async findAll(params: {
+    skip?: number;
+    take?: number;
+    search?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  }) {
+    const { skip, take, search, sortBy, sortOrder } = params;
+
+    const where :any= search
+      ? {
+          OR: [
+            { name: { contains: search, mode: 'insensitive' } },
+            { surName: { contains: search, mode: 'insensitive' } },
+          ],
+        }
+      : {};
+
+    const orderBy:any = sortBy
+      ? { [sortBy]: sortOrder || 'asc' }
+      : { name: 'asc' };
+
+    return this.prisma.contact.findMany({
+      where,
+      skip,
+      take,
+      orderBy,
+    });
   }
 
   async findOne(id: string) {

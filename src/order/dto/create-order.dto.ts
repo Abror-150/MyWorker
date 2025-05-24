@@ -49,10 +49,14 @@ export class OrderProductDto {
   @IsNumber()
   price: number;
 
+  @ApiProperty({ example: 1 })
+  @IsNotEmpty()
+  workingTime: number;
+
   @ApiProperty({ example: orderTime.HOUR })
   @IsNotEmpty()
   @IsEnum(orderTime)
-  workingTime: orderTime;
+  timeUnit: orderTime;
 
   @ApiProperty({ type: [ToolDto] })
   @IsOptional()

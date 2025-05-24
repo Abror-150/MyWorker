@@ -73,6 +73,7 @@ export class CreateToolDto {
   sizeId?: string;
 
   @ApiProperty({ example: 'uuid', description: 'Capacity ID' })
+  @IsOptional()
   @IsUUID()
   capacityId: string;
 

@@ -32,6 +32,7 @@ export class OrderController {
     const userId = req['user-id'];
     return this.orderService.create(createOrderDto, userId);
   }
+  @UseGuards(AuthGuard)
   @Get('myOrder')
   myOrder(@Req() req: Request) {
     let userId = req['user-id'];
