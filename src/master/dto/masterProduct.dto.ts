@@ -34,12 +34,12 @@ export class MasterProductDto {
   @ApiProperty({ description: 'Kunlik narx', example: 100000 })
   @Type(() => Number)
   @IsNumber()
-  @MinLength(1)
+  @Min(1)
   priceDaily: number;
 
   @ApiProperty({ description: 'Tajriba yillarda', example: 2.5 })
   @Type(() => Number)
   @IsNumber()
-  @MinLength(1)
+  @Min(1)
   experience: number;
 }

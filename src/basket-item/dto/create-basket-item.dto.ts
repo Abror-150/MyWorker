@@ -39,7 +39,7 @@ export class CreateBasketItemDto {
 
   @ApiProperty({
     description: 'Asbob (tool) IDsi',
-    example: 'b0421bc0-33f7-4992-b17c-d831161160bd',
+    example: '87ffa935-1ea4-491d-ac79-c16060d74aa3',
   })
   @IsOptional()
   @IsUUID()
