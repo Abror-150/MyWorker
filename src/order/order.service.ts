@@ -50,11 +50,13 @@ export class OrderService {
     }
 
     let productTotal = 0;
+
     for (const item of data.orderProducts) {
-      const productSum = item.count * item.price;
-      productTotal += productSum;
+      let itemTotal = 0;
 
       if (item.tools && item.tools.length > 0) {
+        itemTotal += item.count * item.price;
+
         for (const tool of item.tools) {
           const foundTool = await this.prisma.tool.findUnique({
             where: { id: tool.toolId },
@@ -62,10 +64,13 @@ export class OrderService {
           });
 
           const toolPrice = foundTool?.price || 0;
-          const toolSum = tool.count * toolPrice;
-          productTotal += toolSum;
+          itemTotal += tool.count * toolPrice;
         }
+      } else {
+        itemTotal = item.count * item.price;
       }
+
+      productTotal += itemTotal;
     }
 
     const newOrder = await this.prisma.order.create({
