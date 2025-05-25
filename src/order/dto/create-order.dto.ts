@@ -16,7 +16,7 @@ import {
 } from 'class-validator';
 
 export class ToolDto {
-  @ApiProperty({ example: 'b0421bc0-33f7-4992-b17c-d831161160bd' })
+  @ApiProperty({ example: '87ffa935-1ea4-491d-ac79-c16060d74aa3' })
   @IsOptional()
   @IsUUID()
   toolId: string;

@@ -3,14 +3,15 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { CreateOrderDto } from './dto/create-order.dto';
+import { CreateOrderDto, OrderProductDto } from './dto/create-order.dto';
 import { UpdateOrderDto } from './dto/update-order.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { where } from 'sequelize';
 import { AssignMastersDto } from './dto/assig-masterdto';
-import { orderStatus } from '@prisma/client';
+import { orderStatus, Prisma, PrismaClient } from '@prisma/client';
 import { contains } from 'class-validator';
 import { TgBotService } from 'src/tg-bot/tg-bot.service';
+import { Decimal } from '@prisma/client/runtime/library';
 
 @Injectable()
 export class OrderService {
@@ -19,121 +20,123 @@ export class OrderService {
     private readonly tgService: TgBotService,
   ) {}
   async create(data: CreateOrderDto, userId: string) {
-    if (!Array.isArray(data.orderProducts)) {
-      throw new BadRequestException('orderProducts massiv bo‘lishi kerak');
+    const basketItems = await this.prisma.basketItem.findMany({
+      where: { userId },
+      include: { product: true, level: true, tool: true },
+    });
+
+    if (basketItems.length === 0) {
+      throw new BadRequestException(
+        'Savatcha bo‘sh, buyurtma yaratib bo‘lmaydi',
+      );
     }
 
-    const total = data.orderProducts.reduce((sum, p) => {
-      if (Array.isArray(p.tools) && p.tools.length > 0) {
-        const toolsCountSum = p.tools.reduce((acc, t) => acc + t.count, 0);
-        return sum + p.count * p.price * toolsCountSum;
-      } else {
-        return sum + p.count * p.price;
-      }
-    }, 0);
-
-    const toolIds = data.orderProducts
-      .filter((item) => Array.isArray(item.tools))
-      .flatMap((item) => item.tools.map((tool) => tool.toolId));
-
+    const toolIds = basketItems
+      .filter((b) => b.toolId != null)
+      .map((b) => b.toolId!);
     const toolsData = toolIds.length
       ? await this.prisma.tool.findMany({ where: { id: { in: toolIds } } })
       : [];
 
-    for (const item of data.orderProducts) {
-      if (Array.isArray(item.tools)) {
-        for (const tool of item.tools) {
-          const toolData = toolsData.find((t) => t.id === tool.toolId);
-          if (!toolData || toolData.quantity < tool.count) {
-            throw new BadRequestException(
-              `Tool ${tool.toolId} ning ombordagi miqdori yetarli emas`,
-            );
-          }
+    for (const item of basketItems) {
+      if (item.toolId) {
+        const toolData = toolsData.find((t) => t.id === item.toolId);
+        if (!toolData || toolData.quantity < item.count) {
+          throw new BadRequestException(
+            `Tool ${item.toolId} ning ombordagi miqdori yetarli emas`,
+          );
         }
       }
     }
 
-    const order = await this.prisma.$transaction(async (tx) => {
-      const order = await tx.order.create({
-        data: {
-          userId,
-          total,
-          lattitude: data.location.lat,
-          longitude: data.location.long,
-          address: data.address,
-          date: data.date,
-          paymentType: data.paymentType,
-          withDelivery: data.withDelivery,
-          deliveryComment: data.commentToDelivery,
-          status: 'IN_PROGRESS',
-          orderProduct: {
-            create: data.orderProducts.map((item) => ({
-              product: { connect: { id: item.productId } },
-              level: item.levelId
-                ? { connect: { id: item.levelId } }
-                : undefined,
+    let productTotal = 0;
+    for (const item of data.orderProducts) {
+      const productSum = item.count * item.price;
+      productTotal += productSum;
+
+      if (item.tools && item.tools.length > 0) {
+        for (const tool of item.tools) {
+          const foundTool = await this.prisma.tool.findUnique({
+            where: { id: tool.toolId },
+            select: { price: true },
+          });
+
+          const toolPrice = foundTool?.price || 0;
+          const toolSum = tool.count * toolPrice;
+          productTotal += toolSum;
+        }
+      }
+    }
+
+    const newOrder = await this.prisma.order.create({
+      data: {
+        userId,
+        total: productTotal,
+        lattitude: data.location?.lat ?? '',
+        longitude: data.location?.long ?? '',
+        address: data.address ?? '',
+        date: data.date ?? new Date(),
+        paymentType: data.paymentType ?? 'CASH',
+        withDelivery: data.withDelivery ?? false,
+        deliveryComment: data.commentToDelivery ?? '',
+        status: 'IN_PROGRESS',
+        orderProduct: {
+          create: basketItems.map((item) => {
+            const base: any = {
+              product: { connect: { id: item.productId! } },
               count: item.count,
-              price: item.price,
-              workingTime: item.workingTime,
-              timeUnit: item.timeUnit,
-              orderProductTool: {
-                create: Array.isArray(item.tools)
-                  ? item.tools.map((tool) => ({
-                      tool: { connect: { id: tool.toolId } },
-                      count: tool.count,
-                    }))
-                  : [],
-              },
-            })),
-          },
+              price: item.totalPrice,
+            };
+            if (item.levelId) {
+              base.level = { connect: { id: item.levelId } };
+            }
+            if (item.workingTime != null) {
+              base.workingTime = item.workingTime;
+            }
+            if (item.timeUnit) {
+              base.timeUnit = item.timeUnit;
+            }
+            if (item.toolId) {
+              base.orderProductTool = {
+                create: [
+                  {
+                    tool: { connect: { id: item.toolId } },
+                    count: item.count,
+                  },
+                ],
+              };
+            }
+            return base as Prisma.orderProductCreateWithoutOrderInput;
+          }),
         },
-      });
-
-      const basketConditions = data.orderProducts.map((p) => ({
-        productId: p.productId,
-        levelId: p.levelId ?? null,
-        toolId: {
-          in: Array.isArray(p.tools) ? p.tools.map((t) => t.toolId) : [],
-        },
-      }));
-
-      await tx.basketItem.deleteMany({
-        where: {
-          userId,
-          OR: basketConditions,
-        },
-      });
-
-      return order;
+      },
     });
 
-    for (const item of data.orderProducts) {
-      if (Array.isArray(item.tools)) {
-        for (const tool of item.tools) {
-          await this.prisma.tool.update({
-            where: { id: tool.toolId },
-            data: { quantity: { decrement: tool.count } },
-          });
-        }
+    for (const item of basketItems) {
+      if (item.toolId) {
+        await this.prisma.tool.update({
+          where: { id: item.toolId },
+          data: { quantity: { decrement: item.count } },
+        });
       }
     }
 
-    const data1 = await this.prisma.order.findUnique({
-      where: { id: order.id },
+    await this.prisma.basketItem.deleteMany({ where: { userId } });
+
+    const fullOrder = await this.prisma.order.findUnique({
+      where: { id: newOrder.id },
       include: {
         user: { select: { fullName: true } },
         orderProduct: { include: { product: { select: { name_uz: true } } } },
         orderMaster: { include: { Master: true } },
       },
     });
-
-    if (!data1) {
-      throw new NotFoundException('buyurtma topilmadi');
+    if (!fullOrder) {
+      throw new NotFoundException('Buyurtma topilmadi');
     }
+    await this.tgService.sendOrderNotification(fullOrder);
 
-    await this.tgService.sendOrderNotification(data1);
-
-    return order;
+    return newOrder;
   }
 
   async assignMastersToOrder(orderId: string, data: AssignMastersDto) {
