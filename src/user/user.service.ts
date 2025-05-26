@@ -219,6 +219,14 @@ export class UserService {
       orderBy: {
         [sortBy]: sortOrder,
       },
+      select: {
+        id: true,
+        fullName: true,
+        email: true,
+        phone: true,
+        role: true,
+        regionId: true,
+      },
     });
 
     if (!users || users.length === 0) {
