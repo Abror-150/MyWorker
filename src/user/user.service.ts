@@ -248,7 +248,7 @@ export class UserService {
     });
 
     if (!sessions || sessions.length == 0) {
-      throw new NotFoundException('Sessiyalar topilmadi');
+      throw new UnauthorizedException('iltimos login qiling');
     }
 
     return { sessions };

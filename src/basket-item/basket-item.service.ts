@@ -50,20 +50,18 @@ export class BasketItemService {
     });
   }
 
-  
   async myBasket(userId: string) {
     const items = await this.prisma.basketItem.findMany({
       where: {
         userId,
       },
       include: {
-        product: true, 
+        product: true,
       },
     });
-  
+
     return items;
   }
-  
 
   async update(id: string, data: UpdateBasketItemDto) {
     let one = await this.prisma.basketItem.findFirst({ where: { id } });
