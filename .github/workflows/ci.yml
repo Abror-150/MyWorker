@@ -21,6 +21,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Generate Prisma Client
+        run: npx prisma generate
+
       - name: Build project
         run: npm run build
 
@@ -31,7 +34,7 @@ jobs:
           username: ${{ secrets.LIGHTSAIL_USER }}
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           port: 22
-          source: 'dist/*,package.json,ecosystem.config.js'
+          source: 'dist/*,package.json,prisma/schema.prisma,prisma/migrations/**,ecosystem.config.js'
           target: '/home/ubuntu/nestjs-app'
 
       - name: Restart App on Lightsail via SSH
@@ -42,5 +45,7 @@ jobs:
           key: ${{ secrets.LIGHTSAIL_SSH_KEY }}
           script: |
             cd /home/ubuntu/nestjs-app
-            /usr/bin/npm install --omit=dev
-            /usr/bin/pm2 restart ecosystem.config.js || /usr/bin/pm2 start ecosystem.config.js
+            npm install --omit=dev
+            npx prisma generate
+            npx prisma migrate deploy
+            pm2 restart ecosystem.config.js || pm2 start ecosystem.config.js
