@@ -16,7 +16,7 @@ import { ApiQuery } from '@nestjs/swagger';
 @Controller('faq')
 export class FaqController {
   constructor(private readonly faqService: FaqService) {}
-
+  
   @Post()
   create(@Body() createFaqDto: CreateFaqDto) {
     return this.faqService.create(createFaqDto);
