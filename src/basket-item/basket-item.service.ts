@@ -18,8 +18,6 @@ export class BasketItemService {
     });
 
     if (!productLevell) {
-      console.log(productLevell, 'sasg');
-
       throw new NotFoundException('Bunday mahsulot topilmadi');
     }
     const productLevel2 = await this.prisma.productLevel.findFirst({
