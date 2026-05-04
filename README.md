@@ -10,8 +10,8 @@ Agar sizga santexnik, quruvchi yoki boshqa mutaxassis kerak bo‘lsa, MyWorker o
 - **Backend:** Node.js, NestJS  
 - **ORM:** Prisma  
 - **Database:** PostgreSQL  
-- **API:** REST + GraphQL (agar ishlatilgan bo‘lsa)  
-- **Deployment:** AWS / PM2 / Nginx (agar deploy qilingan bo‘lsa)  
+- **API:** REST  
+- **Deployment:** AWS / PM2 / Nginx 
 
 ---
 
