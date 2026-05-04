@@ -1,44 +1,38 @@
-# 🛠️ MyWorker
+# MyWorker API
 
-MyWorker — bu **mijozlar va ishchilarni bog‘lovchi platforma**.  
-Agar sizga santexnik, quruvchi yoki boshqa mutaxassis kerak bo‘lsa, MyWorker orqali **buyurtma berish** mumkin.  
+Mijozlar va ustalarni bog'lovchi platforma backend API'si.
+Buyurtma bering, usta toping, xizmatni baholang.
 
----
+## Stack
+NestJS • PostgreSQL • Prisma • Docker • JWT • Nodemailer
 
-## 🚀 Texnologiyalar (Stack)
+## Asosiy funksiyalar
+- OTP orqali email tasdiqlash
+- Multi-role: USER_FIZ, USER_YUR, SELLER, ADMIN
+- Buyurtma yaratish va ustaga biriktirish
+- Session management (IP, device tracking)
+- Mahsulot va asboblar katalogi
 
-- **Backend:** Node.js, NestJS  
-- **ORM:** Prisma  
-- **Database:** PostgreSQL  
-- **API:** REST  
-- **Deployment:** AWS / PM2 / Nginx 
-
----
-
-## 📌 Asosiy funksiyalar
-
-- 📝 Mijozlar buyurtma yaratishi mumkin (masalan: "santexnik kerak").  
-- 🔎 Ishchilar buyurtmalarni ko‘rib, o‘z xizmatlarini taklif qilishadi.  
-- 📂 Buyurtmalarni boshqarish (yaratish, yangilash, o‘chirish).  
-- 👥 Mijozlar va ishchilar o‘rtasida aloqa.  
-- 📊 Ishchi va buyurtmalar haqidagi ma’lumotlarni saqlash.  
-
----
-
-## ⚙️ O‘rnatish va ishga tushirish
-
-```bash
-# Reponi clone qiling
+## Ishga tushirish
 git clone https://github.com/abror-150/MyWorker.git
-
-# Loyihaga kiring
 cd MyWorker
-
-# Paketlarni o‘rnating
+cp .env.example .env
 npm install
-
-# Ma’lumotlar bazasini migratsiya qiling
 npx prisma migrate dev
-
-# Loyihani ishga tushiring
 npm run start:dev
+
+## Environment variables (.env.example)
+DATABASE_URL=postgresql://user:password@localhost:5432/myworker
+JWT_SECRET=your-secret-key
+MAIL_USER=your@gmail.com
+MAIL_PASS=your-password
+PORT=3000
+
+## API endpoints
+POST /user/send-email     — OTP yuborish
+POST /user/verify-email   — Email tasdiqlash
+POST /user/register       — Ro'yxatdan o'tish
+POST /user/login          — Kirish
+GET  /user/me             — Profil
+POST /order               — Buyurtma yaratish
+GET  /master              — Ustalar ro'yxati
